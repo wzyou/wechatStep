@@ -2,7 +2,7 @@ name: Wechat steps update
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # 每天 UTC 2 点，北京时间 10 点
+    - cron: '0 13 * * *'  # 每天 UTC 13 点，即北京时间 21 点（晚上9点）
   workflow_dispatch:
 
 jobs:
@@ -10,18 +10,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Submit steps to API
+      - name: Submit steps
         env:
           EMAIL: ${{ secrets.STEP_EMAIL }}
           PASSWORD: ${{ secrets.STEP_PASSWORD }}
-          STEPS: ${{ secrets.STEP_COUNT }}
+          API_URL: ${{ vars.STEP_API_URL }}
+          STEP_MIN: ${{ vars.STEP_MIN }}
+          STEP_MAX: ${{ vars.STEP_MAX }}
         run: |
-          curl -s -X POST "https://steps.8bq.ovh/api" \
+          RANGE=$((STEP_MAX - STEP_MIN + 1))
+          RANDOM_STEP=$((RANDOM % RANGE + STEP_MIN))
+          echo "💡 提交步数: $RANDOM_STEP"
+
+          curl -s -X POST "$API_URL" \
             -H "accept: */*" \
-            -H "origin: https://steps.8bq.ovh" \
-            -H "referer: https://steps.8bq.ovh/" \
             -H "user-agent: Mozilla/5.0" \
             --form "account=$EMAIL" \
             --form "password=$PASSWORD" \
-            --form "steps=$STEPS"
-
+            --form "steps=$RANDOM_STEP"
