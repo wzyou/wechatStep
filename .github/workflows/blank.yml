@@ -20,7 +20,7 @@ jobs:
             PASSWORD="${acc#*:}"
             RANGE=$((STEP_MAX - STEP_MIN + 1))
             RANDOM_STEP=$((RANDOM % RANGE + STEP_MIN))
-            echo "💡 提交步数: $RANDOM_STEP for $EMAIL"
+            echo "💡 Steps submitted: $RANDOM_STEP"
             curl -s -X POST "$API_URL" \
               -H "accept: */*" \
               -H "user-agent: Mozilla/5.0" \
