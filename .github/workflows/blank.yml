@@ -8,23 +8,28 @@ on:
 jobs:
   update-steps:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Submit steps
+      - name: Submit steps for all accounts
+        run: |
+          API_URL="$API_URL"
+          STEP_MIN="$STEP_MIN"
+          STEP_MAX="$STEP_MAX"
+          IFS=';' read -ra ACC_ARR <<< "$STEP_ACCOUNTS"
+          for acc in "${ACC_ARR[@]}"; do
+            EMAIL="${acc%%:*}"
+            PASSWORD="${acc#*:}"
+            RANGE=$((STEP_MAX - STEP_MIN + 1))
+            RANDOM_STEP=$((RANDOM % RANGE + STEP_MIN))
+            echo "💡 提交步数: $RANDOM_STEP for $EMAIL"
+            curl -s -X POST "$API_URL" \
+              -H "accept: */*" \
+              -H "user-agent: Mozilla/5.0" \
+              --form "account=$EMAIL" \
+              --form "password=$PASSWORD" \
+              --form "steps=$RANDOM_STEP"
+          done
         env:
-          EMAIL: ${{ secrets.STEP_EMAIL }}
-          PASSWORD: ${{ secrets.STEP_PASSWORD }}
-          API_URL: ${{ vars.STEP_API_URL }}
+          STEP_ACCOUNTS: ${{ secrets.STEP_ACCOUNTS }}
           STEP_MIN: ${{ vars.STEP_MIN }}
           STEP_MAX: ${{ vars.STEP_MAX }}
-        run: |
-          RANGE=$((STEP_MAX - STEP_MIN + 1))
-          RANDOM_STEP=$((RANDOM % RANGE + STEP_MIN))
-          echo "💡 提交步数: $RANDOM_STEP"
-
-          curl -s -X POST "$API_URL" \
-            -H "accept: */*" \
-            -H "user-agent: Mozilla/5.0" \
-            --form "account=$EMAIL" \
-            --form "password=$PASSWORD" \
-            --form "steps=$RANDOM_STEP"
+          API_URL: ${{ vars.API_URL }}
